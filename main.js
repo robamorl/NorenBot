@@ -92,6 +92,11 @@ const connectDiscord = () => {
 
   // GASへPOSTする関数を実行
   client.on("messageCreate", (message) => {
+    if (!client.isReady()) {
+      // 処理可能な状態でなければエラー
+      writeLog("bot is not ready yet. messageCreate event ignored.");
+      return;
+    }
     // writeLog("messageCreate event detected.");
     // コマンドの判定
     let isBotCommand =
