@@ -104,7 +104,7 @@ const connectDiscord = () => {
       // ----------------------------------------
       // 暖簾生成コマンド
       // ----------------------------------------
-      sendGAS(message);
+      operateNoren(message);
     } else if (
       isBotCommand &&
       message.type == discord.MessageType.Reply &&
@@ -130,7 +130,7 @@ const connectDiscord = () => {
               client.user.id == sourceMessage.author.id &&
               createIssuingUserId.includes(commandIssuingUserId)
             ) {
-              deleteGAS(message, sourceMessage);
+              deleteNoren(message, sourceMessage);
             }
           });
       };
@@ -151,17 +151,92 @@ const connectDiscord = () => {
 // ======================================================================
 // GASにデータをPOSTする関数
 // ======================================================================
+// 全ての処理をサーバーで完結するよう修正
 // ----------------------------------------
 // 送信処理
 // ----------------------------------------
-const sendGAS = (message) => {
+// const sendGAS = (message) => {
+//   writeLog("------------------------------");
+//   writeLog("NOREN_CREATE");
+//   writeLog("message type:" + message.type);
+//   //writeLog(" author:" + message.author);
+//   writeLog("reply message:" + message.content.replace(/(<@[0-9]+>|<@&[0-9]+>)/g, ""));
+
+//   // GASへPOSTするJSONデータを設定
+//   const jsonData = {
+//     author: message.author,
+//     content: message.content,
+//     channel: message.channel,
+//     ismention: message.mentions.has(client.user),
+//     userid: message.author.id,
+//   };
+
+//   // 非同期処理でPOST
+//   const post = async () => {
+//     try {
+//       await axios({
+//         method: "post",
+//         url: process.env.GAS_URL,
+//         data: jsonData,
+//         responseType: "json",
+//       }).then((response) => {
+//         const msg = response.data;
+
+//         //送信方法を振り分け
+//         writeLog("result message type:" + msg.messageType);
+//         writeLog("noren message:" + msg.content.replace(/(<@[0-9]+>|<@&[0-9]+>|\r\n)/g, ""));
+//         switch (msg.messageType) {
+//           case "nothing": // 何もしない
+//             break;
+
+//           case "reply": //返信
+//             message.reply(msg.content).catch((error) => {
+//               writeLog("reply error: " + error.message);
+//             });
+//             break;
+
+//           case "send": // ただ送る
+//             message.channel.send(msg.content).catch((error) => {
+//               writeLog("send error: " + error.message);
+//             });
+//             break;
+
+//           case "delete_send": // 元メッセージの削除と送信
+//             message.delete().catch((error) => {
+//               writeLog("original message delete error: " + error.message);
+//             });
+//             writeLog("original message delete success.");
+//             message.channel.send(msg.content).catch((error) => {
+//               writeLog("send error: " + error.message);
+//             });
+//             writeLog("noren send success.");
+
+//           default:
+//             break;
+//         }
+//       });
+//     } catch (error) {
+//       // 何かしらエラーがあったらログ出力
+//       message.reply("暖簾作りに失敗しました…ごめんね");
+//       writeLog(" **************************************************");
+//       writeLog(" Exception");
+//       writeLog(" **************************************************");
+//       console.log(error);
+//     }
+//   };
+//   post();
+// };
+
+// ======================================================================
+// 暖簾操作処理
+// ======================================================================
+const operateNoren = (message) => {
   writeLog("------------------------------");
   writeLog("NOREN_CREATE");
   writeLog("message type:" + message.type);
-  //writeLog(" author:" + message.author);
   writeLog("reply message:" + message.content.replace(/(<@[0-9]+>|<@&[0-9]+>)/g, ""));
 
-  // GASへPOSTするJSONデータを設定
+  // JSONデータを設定
   const jsonData = {
     author: message.author,
     content: message.content,
@@ -170,66 +245,56 @@ const sendGAS = (message) => {
     userid: message.author.id,
   };
 
-  // 非同期処理でPOST
-  const post = async () => {
-    try {
-      await axios({
-        method: "post",
-        url: process.env.GAS_URL,
-        data: jsonData,
-        responseType: "json",
-      }).then((response) => {
-        const msg = response.data;
-
-        //送信方法を振り分け
-        writeLog("result message type:" + msg.messageType);
-        writeLog("noren message:" + msg.content.replace(/(<@[0-9]+>|<@&[0-9]+>|\r\n)/g, ""));
-        switch (msg.messageType) {
-          case "nothing": // 何もしない
-            break;
-
-          case "reply": //返信
-            message.reply(msg.content).catch((error) => {
-              writeLog("reply error: " + error.message);
-            });
-            break;
-
-          case "send": // ただ送る
-            message.channel.send(msg.content).catch((error) => {
-              writeLog("send error: " + error.message);
-            });
-            break;
-
-          case "delete_send": // 元メッセージの削除と送信
-            message.delete().catch((error) => {
-              writeLog("original message delete error: " + error.message);
-            });
-            writeLog("original message delete success.");
-            message.channel.send(msg.content).catch((error) => {
-              writeLog("send error: " + error.message);
-            });
-            writeLog("noren send success.");
-
-          default:
-            break;
-        }
-      });
-    } catch (error) {
-      // 何かしらエラーがあったらログ出力
-      message.reply("暖簾作りに失敗しました…ごめんね");
-      writeLog(" **************************************************");
-      writeLog(" Exception");
-      writeLog(" **************************************************");
-      console.log(error);
-    }
-  };
-  post();
-};
+  try {   
+      // 暖簾作成
+      const msg = createNoren(jsonData);
+    
+      //送信方法を振り分け
+      writeLog("result message type:" + msg.messageType);
+      writeLog("noren message:" + msg.content.replace(/(<@[0-9]+>|<@&[0-9]+>|\r\n)/g, ""));
+      switch (msg.messageType) {
+        case "nothing": // 何もしない
+          break;
+    
+        case "reply": //返信
+          message.reply(msg.content).catch((error) => {
+            writeLog("reply error: " + error.message);
+          });
+          break;
+    
+        case "send": // ただ送る
+          message.channel.send(msg.content).catch((error) => {
+            writeLog("send error: " + error.message);
+          });
+          break;
+    
+        case "delete_send": // 元メッセージの削除と送信
+          message.delete().catch((error) => {
+            writeLog("original message delete error: " + error.message);
+          });
+          writeLog("original message delete success.");
+          message.channel.send(msg.content).catch((error) => {
+            writeLog("send error: " + error.message);
+          });
+          writeLog("noren send success.");
+    
+        default:
+          break;
+      }
+  } catch (error) {
+    // 何かしらエラーがあったらログ出力
+    message.reply("暖簾作りに失敗しました…ごめんね");
+    writeLog(" **************************************************");
+    writeLog(" Exception");
+    writeLog(" **************************************************");
+    console.log(error);
+  }
+}
 
 // ----------------------------------------
 // 削除処理
 // ----------------------------------------
-const deleteGAS = (message, sourceMessage) => {
+const deleteNoren = (message, sourceMessage) => {
   writeLog(" ------------------------------");
   writeLog(" NOREN_DELETE");
   writeLog(" message type:" + message.type);
@@ -254,6 +319,74 @@ http
     response.end("[LOG " + getCurrentTime() + "] Discord bot is active now.");
   })
   .listen(3000);
+
+// 暖簾作成
+function createNoren(jsonData) {
+  writeLog("createNoren function called.");
+  // ============================================================
+  // デバッグ用
+  // const author = "test";
+  // const message = {"content": "# t e s    t"};
+  // const isMention = true;
+  // ============================================================
+  const author = jsonData.userid;
+  const message = jsonData.content;
+  const isMention = jsonData.ismention;
+  let content;
+  let messageType;
+
+  // メンションか判定
+  if (isMention) {
+    // メンションの場合
+    let str = message;
+    // メンション部分・改行を除外
+    str = str.replace(/(<@[0-9]+> *|<@&[0-9]+> *|\r\n|\n|\r)/g, "");
+    writeLog("target string: " + str);
+
+    // サイズ指定があるか判定
+    let specifyFontSize = str.match(/^(#|##|###) /g);
+    if (specifyFontSize !== null) {
+      str = str.replace(/^(#|##|###) /g, "");
+    }
+
+    // 半角スペースを除外
+    str = str.replace(/( )/g, "");
+
+    // 文字数カウント
+    let length = 0;
+    for (ch of str) {
+      length++;
+    }
+
+    if (length == 0) {
+      content = "リプライの後に続けて暖簾にしたい文字を入力してね。";
+      messageType = "reply";
+
+    } else {
+      let noren = "￣｜";
+      
+      for (ch of str) {
+        noren += ch + "｜";
+      }
+      noren = noren.slice(0,-1) + "｜￣";
+
+      // フォントサイズ指定があるなら最後に付与
+      if (specifyFontSize !== null) {
+        noren = specifyFontSize[0] + noren;
+      }
+
+      // メンション付けてメッセージ作成
+      content = "<@" + author + ">\r\n" + noren;
+      messageType = "delete_send";
+
+      writeLog(content);
+    }
+    return {
+      content: content,
+      messageType: messageType,
+    };
+  }
+}
 
 // ログ出力
 function writeLog(logMsg) {
