@@ -20,10 +20,10 @@ const connectDiscord = () => {
     writeLog("Create Client.");
     client = new discord.Client({
       intents: [
-        discord.Intents.FLAGS.GUILDS,
-        discord.Intents.FLAGS.GUILD_MESSAGES,
-        discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-        discord.Intents.FLAGS.MESSAGE_CONTENT,
+        discord.GatewayIntentBits.GUILDS,
+        discord.GatewayIntentBits.GUILD_MESSAGES,
+        discord.GatewayIntentBits.GUILD_MESSAGE_REACTIONS,
+        discord.GatewayIntentBits.MESSAGE_CONTENT,
       ],
     });
   } else {
@@ -99,14 +99,14 @@ const connectDiscord = () => {
         ignoreEveryone: true,
         ignoreHere: true,
       });
-    if (isBotCommand && message.type != "REPLY") {
+    if (isBotCommand && message.type != discord.MessageType.Reply) {
       // ----------------------------------------
       // 暖簾生成コマンド
       // ----------------------------------------
       sendGAS(message);
     } else if (
       isBotCommand &&
-      message.type == "REPLY" &&
+      message.type == discord.MessageType.Reply &&
       message.content == COMMAND_NOREN_DELETE
     ) {
       // ----------------------------------------
