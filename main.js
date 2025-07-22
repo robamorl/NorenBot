@@ -187,17 +187,25 @@ const sendGAS = (message) => {
             break;
 
           case "reply": //返信
-            message.reply(msg.content);
+            message.reply(msg.content).catch((error) => {
+              writeLog("reply error: " + error.message);
+            });
             break;
 
           case "send": // ただ送る
-            message.channel.send(msg.content);
+            message.channel.send(msg.content).catch((error) => {
+              writeLog("send error: " + error.message);
+            });
             break;
 
           case "delete_send": // 元メッセージの削除と送信
-            message.delete();
+            message.delete().catch((error) => {
+              writeLog("original message delete error: " + error.message);
+            });
             writeLog("original message delete success.");
-            message.channel.send(msg.content);
+            message.channel.send(msg.content).catch((error) => {
+              writeLog("send error: " + error.message);
+            });
             writeLog("noren send success.");
 
           default:
