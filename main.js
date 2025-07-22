@@ -62,6 +62,19 @@ const connectDiscord = () => {
     writeLog("login success. [" + client.readyAt + "]");
     writeLog("bot is ready!")
   });
+  // 接続状態の変化をログ出力
+  client.on("reconnecting", () => {
+    writeLog("bot is reconnecting...");
+  });
+  // 切断状態になったらログ出力
+  client.on("disconnect", () => {
+    writeLog("bot is disconnected.");
+  });
+  // エラー検出時にログ出力
+  client.on("error", (error) => {
+    writeLog("bot error detected.");
+    writeLog("Error: " + error.message);
+  });
 
   // GASへPOSTする関数を実行
   client.on("messageCreate", (message) => {
@@ -213,6 +226,7 @@ const deleteGAS = (message, sourceMessage) => {
 connectDiscord();
 
 // GASからのPOSTリクエストを受け取る用
+// Botとは別にHTTPサーバを立てる
 http
   .createServer((request, response) => {
     response.end("[LOG " + getCurrentTime() + "] Discord bot is active now.");
