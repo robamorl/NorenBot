@@ -65,6 +65,7 @@ const connectDiscord = () => {
 
   // GASへPOSTする関数を実行
   client.on("messageCreate", (message) => {
+    writeLog("messageCreate event detected.");
     // コマンドの判定
     let isBotCommand =
       !message.author.bot &&
@@ -109,6 +110,7 @@ const connectDiscord = () => {
       judgeNorenDelete(isBotCommand, message);
     } else {
       // noop
+      writeLog("messageCreate event detected but not a command.");
     }
   });
 
