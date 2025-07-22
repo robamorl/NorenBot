@@ -20,10 +20,10 @@ const connectDiscord = () => {
     writeLog("Create Client.");
     client = new discord.Client({
       intents: [
-        discord.GatewayIntentBits.GUILDS,
-        discord.GatewayIntentBits.GUILD_MESSAGES,
-        discord.GatewayIntentBits.GUILD_MESSAGE_REACTIONS,
-        discord.GatewayIntentBits.MESSAGE_CONTENT,
+        discord.GatewayIntentBits.Guilds,
+        discord.GatewayIntentBits.GuildMessages,
+        discord.GatewayIntentBits.GuildMessageReactions,
+        discord.GatewayIntentBits.MessageContent,
       ],
     });
   } else {
@@ -44,9 +44,10 @@ const connectDiscord = () => {
           writeLog("Create Client(by client instance not null).");
           client = new discord.Client({
             intents: [
-              discord.GatewayIntentBits.GUILDS,
-              discord.GatewayIntentBits.GUILD_MESSAGES,
-              discord.GatewayIntentBits.GUILD_MESSAGE_REACTIONS,
+              discord.GatewayIntentBits.Guilds,
+              discord.GatewayIntentBits.GuildMessages,
+              discord.GatewayIntentBits.GuildMessageReactions,
+              discord.GatewayIntentBits.MessageContent,
             ],
           });
           break;
