@@ -56,7 +56,6 @@ const connectDiscord = () => {
 
   // ログイン処理
   writeLog("login currently running...");
-  writeLog("toke: " + process.env.DISCORD_BOT_TOKEN);
   client.login(process.env.DISCORD_BOT_TOKEN);
   // 待機状態になったらログ出力
   client.on("ready", () => {
