@@ -44,9 +44,9 @@ const connectDiscord = () => {
           writeLog("Create Client(by client instance not null).");
           client = new discord.Client({
             intents: [
-              discord.Intents.FLAGS.GUILDS,
-              discord.Intents.FLAGS.GUILD_MESSAGES,
-              discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+              discord.GatewayIntentBits.GUILDS,
+              discord.GatewayIntentBits.GUILD_MESSAGES,
+              discord.GatewayIntentBits.GUILD_MESSAGE_REACTIONS,
             ],
           });
           break;
