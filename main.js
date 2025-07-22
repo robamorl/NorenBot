@@ -57,6 +57,13 @@ const connectDiscord = () => {
   // ログイン処理
   writeLog("login currently running...");
   client.login(process.env.DISCORD_BOT_TOKEN);
+  if (client.isReady()) {
+    // すでにログイン済みならログ出力
+    writeLog("logined already.");
+  } else {
+    // ログイン処理中ならログ出力
+    writeLog("login process started.");
+  }
   // 待機状態になったらログ出力
   client.on("ready", () => {
     writeLog("login success. [" + client.readyAt + "]");
