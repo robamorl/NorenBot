@@ -29,7 +29,8 @@ http
     writeLog("HTTP Server listening on port " + PORT);
   });
 
-// 10秒間隔でクライアント接続状態をポーリング
+// 30分間隔でクライアント接続状態をポーリング
+// 30分 = 30 * 60 * 1000 = 1,800,000 ms
 setInterval(() => {
   if (client) {
     const isReady = client.isReady();
@@ -40,7 +41,7 @@ setInterval(() => {
   } else {
     writeLog("Polling: client is null");
   }
-}, 10000);
+}, 1800000);
 
 // ======================================================================
 // ディスコード接続処理
