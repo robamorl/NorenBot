@@ -281,20 +281,22 @@ function createNoren(jsonData) {
     // 半角スペースを除外
     str = str.replace(/( )/g, "");
 
-    // 文字数カウント
-    let length = 0;
-    for (ch of str) {
-      length++;
-    }
-
-    if (length == 0) {
+    // 文字数チェック
+    if (str.length == 0) {
       content = "リプライの後に続けて暖簾にしたい文字を入力してね。";
       messageType = "reply";
 
     } else {
       let noren = "￣｜";
       
-      for (ch of str) {
+      for (let i = 0; i < str.length; i++) {
+        let ch = str[i];
+        if (i + 1 < str.length
+            && (str[i + 1] == "\uFE0E" || str[i + 1] == "\uFE0F")) {
+          // 文字の次がVS16(VS15)なら結合して扱う
+          ch += str[i + 1];
+          i++;
+        }
         noren += ch + "｜";
       }
       noren = noren.slice(0,-1) + "｜￣";
@@ -308,7 +310,7 @@ function createNoren(jsonData) {
       content = "<@" + author + ">\r\n" + noren;
       messageType = "delete_send";
 
-      writeLog(content);
+      // writeLog(content);
     }
     return {
       content: content,
