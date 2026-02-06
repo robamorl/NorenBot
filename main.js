@@ -29,6 +29,19 @@ http
     writeLog("HTTP Server listening on port " + PORT);
   });
 
+// 10秒間隔でクライアント接続状態をポーリング
+setInterval(() => {
+  if (client) {
+    const isReady = client.isReady();
+    writeLog("Polling: client.isReady() = " + isReady);
+    if (!isReady) {
+      writeLog("Warning: Client is not ready. Connection may be stalled.");
+    }
+  } else {
+    writeLog("Polling: client is null");
+  }
+}, 10000);
+
 // ======================================================================
 // ディスコード接続処理
 // ======================================================================
