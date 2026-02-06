@@ -321,8 +321,8 @@ connectDiscord();
 // Botとは別にHTTPサーバを立てる
 http
   .createServer((request, response) => {
-    connectDiscord();
-    response.end("[LOG " + getCurrentTime() + "] Discord bot is active now.");
+    var resStr = "[LOG " + getCurrentTime() + "]Discord bot status: " + (client ? (client.isReady() ? "READY" : "NOT READY") : "CLIENT NOT INITIALIZED");
+    response.end(resStr);
   })
   .listen(3000);
 
