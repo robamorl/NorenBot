@@ -43,6 +43,12 @@ function connectDiscord() {
         discord.GatewayIntentBits.GuildMessageReactions,
         discord.GatewayIntentBits.MessageContent,
       ],
+      rest: {
+        timeout: 30000
+      },
+      ws: {
+        version: 10
+      }
     });
   } else {
     // clientがあるなら状態に応じて処理
@@ -67,6 +73,12 @@ function connectDiscord() {
               discord.GatewayIntentBits.GuildMessageReactions,
               discord.GatewayIntentBits.MessageContent,
             ],
+            rest: {
+              timeout: 30000
+            },
+            ws: {
+              version: 10
+            }
           });
           break;
       }
@@ -104,6 +116,15 @@ function connectDiscord() {
   client.on("error", (error) => {
     writeLog("bot error detected.");
     writeLog("Error: " + error.message);
+  });
+  // シャードエラー検出
+  client.on("shardError", (error) => {
+    writeLog("shard error detected.");
+    writeLog("Shard Error: " + error.message);
+  });
+  // 再開中の通知
+  client.on("resumed", () => {
+    writeLog("bot connection resumed.");
   });
 
   // メイン処理を登録
