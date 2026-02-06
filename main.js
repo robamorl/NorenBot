@@ -19,12 +19,15 @@ connectDiscord();
 
 // GASからのPOSTリクエストを受け取る用
 // Botとは別にHTTPサーバを立てる
+const PORT = process.env.PORT || 3000;
 http
   .createServer((request, response) => {
     var resStr = "[LOG " + getCurrentTime() + "]Server is running.";
     response.end(resStr);
   })
-  .listen(3000);
+  .listen(PORT, () => {
+    writeLog("HTTP Server listening on port " + PORT);
+  });
 
 // ======================================================================
 // ディスコード接続処理
