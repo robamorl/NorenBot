@@ -12,9 +12,24 @@ const COMMAND_NOREN_DELETE = "消して";
 let client = null;
 
 // ======================================================================
+// メイン処理
+// ======================================================================
+// 実行
+connectDiscord();
+
+// GASからのPOSTリクエストを受け取る用
+// Botとは別にHTTPサーバを立てる
+http
+  .createServer((request, response) => {
+    var resStr = "[LOG " + getCurrentTime() + "]Server is running.";
+    response.end(resStr);
+  })
+  .listen(3000);
+
+// ======================================================================
 // ディスコード接続処理
 // ======================================================================
-const connectDiscord = () => {
+function connectDiscord() {
   if (client == null) {
     // clientがnullならインスタンス作成
     writeLog("Create Client.");
@@ -55,15 +70,7 @@ const connectDiscord = () => {
     }
   }
 
-  // ログイン処理
-  writeLog("login currently running...");
-  client.login(process.env.DISCORD_BOT_TOKEN);
-
-  // debug
-  client.on("debug", (info) => {
-    writeLog("debug: " + info);
-  });
-
+  // Ready状態の判定
   if (client.isReady()) {
     // すでにログイン済みならログ出力
     writeLog("logined already.");
@@ -71,7 +78,13 @@ const connectDiscord = () => {
     // ログイン処理中ならログ出力
     writeLog("login process started.");
   }
-  // 待機状態になったらログ出力
+
+  // イベントリスナの登録
+  // debug
+  client.on("debug", (info) => {
+    writeLog("debug: " + info);
+  });
+  // 接続完了時にログ出力
   client.on("ready", () => {
     writeLog("login success. [" + client.readyAt + "]");
     writeLog("bot is ready!")
@@ -90,7 +103,7 @@ const connectDiscord = () => {
     writeLog("Error: " + error.message);
   });
 
-  // GASへPOSTする関数を実行
+  // メイン処理を登録
   client.on("messageCreate", (message) => {
     if (!client.isReady()) {
       // 処理可能な状態でなければエラー
@@ -151,91 +164,16 @@ const connectDiscord = () => {
     writeLog("please set ENV: DISCORD_BOT_TOKEN");
     process.exit(0);
   }
+
+  // ログイン処理
+  writeLog("login currently running...");
+  client.login(process.env.DISCORD_BOT_TOKEN);
 };
-
-// ======================================================================
-// GASにデータをPOSTする関数
-// ======================================================================
-// 全ての処理をサーバーで完結するよう修正
-// ----------------------------------------
-// 送信処理
-// ----------------------------------------
-// const sendGAS = (message) => {
-//   writeLog("------------------------------");
-//   writeLog("NOREN_CREATE");
-//   writeLog("message type:" + message.type);
-//   //writeLog(" author:" + message.author);
-//   writeLog("reply message:" + message.content.replace(/(<@[0-9]+>|<@&[0-9]+>)/g, ""));
-
-//   // GASへPOSTするJSONデータを設定
-//   const jsonData = {
-//     author: message.author,
-//     content: message.content,
-//     channel: message.channel,
-//     ismention: message.mentions.has(client.user),
-//     userid: message.author.id,
-//   };
-
-//   // 非同期処理でPOST
-//   const post = async () => {
-//     try {
-//       await axios({
-//         method: "post",
-//         url: process.env.GAS_URL,
-//         data: jsonData,
-//         responseType: "json",
-//       }).then((response) => {
-//         const msg = response.data;
-
-//         //送信方法を振り分け
-//         writeLog("result message type:" + msg.messageType);
-//         writeLog("noren message:" + msg.content.replace(/(<@[0-9]+>|<@&[0-9]+>|\r\n)/g, ""));
-//         switch (msg.messageType) {
-//           case "nothing": // 何もしない
-//             break;
-
-//           case "reply": //返信
-//             message.reply(msg.content).catch((error) => {
-//               writeLog("reply error: " + error.message);
-//             });
-//             break;
-
-//           case "send": // ただ送る
-//             message.channel.send(msg.content).catch((error) => {
-//               writeLog("send error: " + error.message);
-//             });
-//             break;
-
-//           case "delete_send": // 元メッセージの削除と送信
-//             message.delete().catch((error) => {
-//               writeLog("original message delete error: " + error.message);
-//             });
-//             writeLog("original message delete success.");
-//             message.channel.send(msg.content).catch((error) => {
-//               writeLog("send error: " + error.message);
-//             });
-//             writeLog("noren send success.");
-
-//           default:
-//             break;
-//         }
-//       });
-//     } catch (error) {
-//       // 何かしらエラーがあったらログ出力
-//       message.reply("暖簾作りに失敗しました…ごめんね");
-//       writeLog(" **************************************************");
-//       writeLog(" Exception");
-//       writeLog(" **************************************************");
-//       console.log(error);
-//     }
-//   };
-//   post();
-// };
 
 // ======================================================================
 // 暖簾操作処理
 // ======================================================================
-const operateNoren = (message) => {
+function operateNoren(message) {
   writeLog("------------------------------");
   writeLog("NOREN_CREATE");
   writeLog("message type:" + message.type);
@@ -299,7 +237,7 @@ const operateNoren = (message) => {
 // ----------------------------------------
 // 削除処理
 // ----------------------------------------
-const deleteNoren = (message, sourceMessage) => {
+function deleteNoren (message, sourceMessage) {
   writeLog(" ------------------------------");
   writeLog(" NOREN_DELETE");
   writeLog(" message type:" + message.type);
@@ -310,21 +248,6 @@ const deleteNoren = (message, sourceMessage) => {
   message.delete();
   sourceMessage.delete();
 };
-
-// ======================================================================
-// メイン処理
-// ======================================================================
-// 実行
-connectDiscord();
-
-// GASからのPOSTリクエストを受け取る用
-// Botとは別にHTTPサーバを立てる
-http
-  .createServer((request, response) => {
-    var resStr = "[LOG " + getCurrentTime() + "]Discord bot status: " + (client ? (client.isReady() ? "READY" : "NOT READY") : "CLIENT NOT INITIALIZED");
-    response.end(resStr);
-  })
-  .listen(3000);
 
 // 暖簾作成
 function createNoren(jsonData) {
@@ -416,3 +339,82 @@ function padZero(num) {
 	}
 	return result;
 }
+
+// ======================================================================
+// GASにデータをPOSTする関数
+// ======================================================================
+// 全ての処理をサーバーで完結するよう修正
+// ----------------------------------------
+// 送信処理
+// ----------------------------------------
+// const sendGAS = (message) => {
+//   writeLog("------------------------------");
+//   writeLog("NOREN_CREATE");
+//   writeLog("message type:" + message.type);
+//   //writeLog(" author:" + message.author);
+//   writeLog("reply message:" + message.content.replace(/(<@[0-9]+>|<@&[0-9]+>)/g, ""));
+
+//   // GASへPOSTするJSONデータを設定
+//   const jsonData = {
+//     author: message.author,
+//     content: message.content,
+//     channel: message.channel,
+//     ismention: message.mentions.has(client.user),
+//     userid: message.author.id,
+//   };
+
+//   // 非同期処理でPOST
+//   const post = async () => {
+//     try {
+//       await axios({
+//         method: "post",
+//         url: process.env.GAS_URL,
+//         data: jsonData,
+//         responseType: "json",
+//       }).then((response) => {
+//         const msg = response.data;
+
+//         //送信方法を振り分け
+//         writeLog("result message type:" + msg.messageType);
+//         writeLog("noren message:" + msg.content.replace(/(<@[0-9]+>|<@&[0-9]+>|\r\n)/g, ""));
+//         switch (msg.messageType) {
+//           case "nothing": // 何もしない
+//             break;
+
+//           case "reply": //返信
+//             message.reply(msg.content).catch((error) => {
+//               writeLog("reply error: " + error.message);
+//             });
+//             break;
+
+//           case "send": // ただ送る
+//             message.channel.send(msg.content).catch((error) => {
+//               writeLog("send error: " + error.message);
+//             });
+//             break;
+
+//           case "delete_send": // 元メッセージの削除と送信
+//             message.delete().catch((error) => {
+//               writeLog("original message delete error: " + error.message);
+//             });
+//             writeLog("original message delete success.");
+//             message.channel.send(msg.content).catch((error) => {
+//               writeLog("send error: " + error.message);
+//             });
+//             writeLog("noren send success.");
+
+//           default:
+//             break;
+//         }
+//       });
+//     } catch (error) {
+//       // 何かしらエラーがあったらログ出力
+//       message.reply("暖簾作りに失敗しました…ごめんね");
+//       writeLog(" **************************************************");
+//       writeLog(" Exception");
+//       writeLog(" **************************************************");
+//       console.log(error);
+//     }
+//   };
+//   post();
+// };
